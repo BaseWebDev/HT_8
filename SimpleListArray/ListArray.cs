@@ -7,11 +7,12 @@ namespace SimpleListArray {
         public int Count { get; set; } = 0;
         private List<T[]> internalList = new List<T[]>();
         public void Add() {
+            T[] arr = new T[] { default(T) };
             ++Count;
-            internalList.Add(default(T[]));
+            internalList.Add(arr);
         }
         public void Add( T inValue)   {
-            T[] arr = new T[] { inValue };
+            T[] arr = new T[] {inValue};
             ++Count;
             internalList.Add(arr);
         }

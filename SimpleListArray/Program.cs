@@ -7,6 +7,7 @@ namespace SimpleListArray
         static void Main(string[] args)
         {
             CustomList<int> customLists = new CustomList<int>();
+            customLists.Add();
             customLists.Add(10);
             customLists.Add(20,30);
             customLists.Add(new int[] {40,50,60});
