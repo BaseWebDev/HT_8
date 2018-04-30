@@ -37,8 +37,5 @@ namespace SimpleListArray {
         IEnumerator IEnumerable.GetEnumerator() {
             return internalList.GetEnumerator();
         }
-        public override string ToString() {
-            return base.ToString();
-        }
     }
 }
