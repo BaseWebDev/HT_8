@@ -47,7 +47,6 @@ namespace SimpleListArray {
         public void Add(params T[] arr) {
             if (OnAdding != null) {
                 var eventArgs = new SimpleListChangingEventArgs<T>(arr);
-                eventArgs.CurOpretion = Operation.add;
                 OnAdding(this, eventArgs);
                 if (eventArgs.Cancel) {
                     return;
