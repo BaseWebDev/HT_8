@@ -2,10 +2,10 @@
 
 namespace SimpleListArray
 {
-    class SimpleListAddedEventArgs <T> : EventArgs where T : struct {
+    class SimpleListChangedEventArgs <T> : EventArgs where T : struct {
         public T[] Value { get; private set; }
 
-        public SimpleListAddedEventArgs(T[] value) {
+        public SimpleListChangedEventArgs(T[] value) {
             this.Value = value;
         }
     }

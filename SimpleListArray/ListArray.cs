@@ -3,13 +3,32 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace SimpleListArray {
-  //  delegate void OnAdded<T>(T i);
-  //  delegate void OnAdding<T>(T i);
-    class CustomList<T>:IEnumerable<T[]>, IList<T[]> where T : struct {
-
-        public EventHandler<SimpleListAddingEventArgs<T>> OnAdding;
-
-        public EventHandler<SimpleListAddedEventArgs<T>> OnAdded;
+   delegate void OnRemoving<T>(T i);
+    class CustomList<T> : IEnumerable<T[]>, IList<T[]>,IEquatable<T[]> where T : struct {
+        /// <summary>
+        /// Событие до добавления
+        /// </summary>
+        public event EventHandler<SimpleListChangingEventArgs<T>> OnAdding;
+        /// <summary>
+        /// Событие после добавления
+        /// </summary>
+        public event EventHandler<SimpleListChangedEventArgs<T>> OnAdded;
+        /// <summary>
+        /// Делегат для удаления с помощью RemoveAt
+        /// </summary>
+        public OnRemoving<int> onRemovingAt;
+        /// <summary>
+        /// Событие до удаления
+        /// </summary>
+        public event EventHandler<SimpleListChangingEventArgs<T>> OnRemoving;
+        /// <summary>
+        /// Событие после удаления
+        /// </summary>
+        public event EventHandler<SimpleListChangedEventArgs<T>> OnRemoved;
+        /// <summary>
+        /// Событие на изменение листа
+        /// </summary>
+        public event EventHandler<SimpleListChangedEventArgs<T>> OnUpdated;
 
         private List<T[]> internalList = new List<T[]>();
 
@@ -26,7 +45,7 @@ namespace SimpleListArray {
         
         public void Add(params T[] arr) {
             if (OnAdding != null) {
-                var eventArgs = new SimpleListAddingEventArgs<T>(arr);
+                var eventArgs = new SimpleListChangingEventArgs<T>(arr);
                 OnAdding(this, eventArgs);
                 if (eventArgs.Cancel) {
                     return;
@@ -35,12 +54,22 @@ namespace SimpleListArray {
             internalList.Add(arr);
 
             if (OnAdded != null) {
-                OnAdded(this, new SimpleListAddedEventArgs<T>(arr));
+                OnAdded(this, new SimpleListChangedEventArgs<T>(arr));
             }
         }
 
         public void Insert(int index, T[] item) {
+            if (OnAdding != null) {
+                var eventArgs = new SimpleListChangingEventArgs<T>(item);
+                OnAdding(this, eventArgs);
+                if (eventArgs.Cancel) {
+                    return;
+                }
+            }
             ((IList<T[]>)internalList).Insert(index, item);
+            if (OnAdded != null) {
+                OnAdded(this, new SimpleListChangedEventArgs<T>(item));
+            }
         }
 
         public void RemoveAt(int index) {
@@ -49,6 +78,32 @@ namespace SimpleListArray {
             } else {
                 throw new ArgumentOutOfRangeException(@"Значение индекса указано неверно!");
             }
+            if (onRemovingAt != null) {
+                onRemovingAt(index);
+            }
+        }
+        public void Clear() {
+            if (OnRemoving != null) {
+                OnRemoving(this, null);
+            }
+            ((IList<T[]>)internalList).Clear();
+            //if (OnRemoved != null) {
+            //    OnRemoved(this, new SimpleListChangedEventArgs<string>(new string[] { @""}));
+            //}
+        }
+        public bool Remove(T[] item) {
+            if (OnRemoving!=null) {
+                var eventArgs = new SimpleListChangingEventArgs<T>(item);
+                OnRemoving(this,eventArgs);
+                if (eventArgs.Cancel) {
+                    return false;
+                }
+            }           
+            var temp = ((IList<T[]>)internalList).Remove(item);
+            if (OnRemoved!=null) {
+                OnRemoved(this, new SimpleListChangedEventArgs<T>(item));
+            }
+            return temp;
         }
 
         public IEnumerator<T[]> GetEnumerator() {
@@ -63,10 +118,6 @@ namespace SimpleListArray {
             return ((IList<T[]>)internalList).IndexOf(item);
         }
 
-        public void Clear() {
-            ((IList<T[]>)internalList).Clear();
-        }
-
         public bool Contains(T[] item) {
             return ((IList<T[]>)internalList).Contains(item);
         }
@@ -75,8 +126,13 @@ namespace SimpleListArray {
             ((IList<T[]>)internalList).CopyTo(array, arrayIndex);
         }
 
-        public bool Remove(T[] item) {
-            return ((IList<T[]>)internalList).Remove(item);
+        bool IEquatable<T[]>.Equals(T[] other) => Equals(this,other);
+        public static bool Equals(T[] arg1 , T[] arg2) {
+            return ValueType.Equals(arg1, arg2);
+        }
+
+        public override int GetHashCode() {
+            return internalList.GetHashCode();
         }
     }
 }

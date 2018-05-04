@@ -6,6 +6,7 @@ namespace SimpleListArray
     {
         static void Main(string[] args)
         {
+           
             CustomList<int> customLists = new CustomList<int>();
             customLists.Add();
             customLists.Add(10);
@@ -28,32 +29,67 @@ namespace SimpleListArray
             //    Console.WriteLine();
             //}
             customLists.OnAdding += Print;
-        //    customLists.OnAdded += Print;
-            customLists.Add(20, 30);
+            customLists.OnAdded += Print;
+            customLists.Add(70, 80);
+            customLists.Insert(20, new int[] { 90 });
+            // Добавим метод для обработки удаления по индексу, используем лямбда-выражение
+            customLists.onRemovingAt = x => Console.WriteLine("Удаляем значение с индексом: "+x);
+            // Создаем локальный стандратный делегат и добавляем в него метод
+            Action<int> operation = customLists.RemoveAt;
+            // Вызываем событие
+            operation(2);
+            // Регистрируем события на удаление
+            customLists.OnRemoving += Print;
+            customLists.OnRemoved += Print;
+            // Ссылки удаляет, а массивы нет надо реализовать IEqutable<T[]>
+            var A = new int[] { 70, 80 };
+            // customLists.Add(A);
+            // Console.WriteLine( customLists.Remove(A));
+            Console.WriteLine(customLists.Remove(new int[] { 70, 80 }));
+          //  customLists.Clear();
         }
-        static void Print(object sender, SimpleListAddingEventArgs<int> args) {
+        static void Print(object sender, SimpleListChangingEventArgs<int> args) {
+            Console.WriteLine("До изменения CustomList: ");
             CustomList<int> tempLists = sender as CustomList<int>;
             if (tempLists != null) {
-                int k = 0;
-                Console.WriteLine("До изменения CustomList: ");
+                int k = 0;           
                 foreach (var tempList in tempLists) {
-                    Console.WriteLine("Элемент списка " + k++);
+                    Console.Write("Элементы списка " + k++ + ": ");
                     foreach (var item in tempList) {
                         Console.Write("\t" + item);
                     }
                     Console.WriteLine();
                 }
             }
-            Console.WriteLine("Добавляемые элементы CustomList: ");
+            Console.WriteLine("Изменяемые элементы CustomList: ");
+            for (int i = 0; i < args.Value.Length; i++) {
+                Console.Write("\t" + args.Value[i]);
+                if (args.Value[i] > 80) {
+                    args.Cancel = true;
+                }
+            }
+            Console.WriteLine();
+            Console.WriteLine();
+
+        }
+        static void Print(object sender, SimpleListChangedEventArgs<int> args) {
+            Console.WriteLine("После изменения CustomList: ");
+            CustomList<int> tempLists = sender as CustomList<int>;
+            if (tempLists != null) {
+                int k = 0;
+                foreach (var tempList in tempLists) {
+                    Console.Write("Элементы списка " + k++ + ": ");
+                    foreach (var item in tempList) {
+                        Console.Write("\t" + item);
+                    }
+                    Console.WriteLine();
+                }
+            }
+            Console.WriteLine("Изменяемые элементы CustomList: ");
             for (int i = 0; i < args.Value.Length; i++) {
                 Console.Write("\t" + args.Value[i]);
             }
             Console.WriteLine();
-        }
-        static void Print(object sender, SimpleListAddedEventArgs<int> args) {
-            for (int i =0; i< args.Value.Length; i++) {
-                Console.Write("\t"+args.Value[i]);
-            }
             Console.WriteLine();
         }
     }
