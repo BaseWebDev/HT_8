@@ -6,9 +6,12 @@ namespace SimpleListArray
         public T[] Value { get; private set; }
      
         public bool Cancel { get; set; }
+        public SimpleListChangingEventArgs():this(default(T[])) {
+        }
 
         public SimpleListChangingEventArgs(T[] value) {
             this.Value = value;
         }
+
     }
 }

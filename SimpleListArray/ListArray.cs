@@ -4,6 +4,7 @@ using System.Collections.Generic;
 
 namespace SimpleListArray {
    delegate void OnRemoving<T>(T i);
+    delegate void Cleared<T>(T i);
     class CustomList<T> : IEnumerable<T[]>, IList<T[]>,IEquatable<T[]> where T : struct {
         /// <summary>
         /// Событие до добавления
@@ -86,9 +87,9 @@ namespace SimpleListArray {
             if (OnRemoving != null) {
                 OnRemoving(this, null);
             }
-            ((IList<T[]>)internalList).Clear();
+            //((IList<T[]>)internalList).Clear();
             //if (OnRemoved != null) {
-            //    OnRemoved(this, new SimpleListChangedEventArgs<string>(new string[] { @""}));
+            //    OnRemoved(this, new SimpleListChangedEventArgs<T>(default));
             //}
         }
         public bool Remove(T[] item) {
@@ -128,7 +129,7 @@ namespace SimpleListArray {
 
         bool IEquatable<T[]>.Equals(T[] other) => Equals(this,other);
         public static bool Equals(T[] arg1 , T[] arg2) {
-            return ValueType.Equals(arg1, arg2);
+            return Equals(arg1, arg2);
         }
 
         public override int GetHashCode() {
