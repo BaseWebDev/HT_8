@@ -3,8 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 
 namespace SimpleListArray {
-   delegate void OnRemoving<T>(T i);
-    delegate void Cleared<T>(T i);
+    delegate void OnRemoving<T>(T i);
+
     class CustomList<T> : IEnumerable<T[]>, IList<T[]>,IEquatable<T[]> where T : struct {
         /// <summary>
         /// Событие до добавления
@@ -47,6 +47,7 @@ namespace SimpleListArray {
         public void Add(params T[] arr) {
             if (OnAdding != null) {
                 var eventArgs = new SimpleListChangingEventArgs<T>(arr);
+                eventArgs.CurOpretion = Operation.add;
                 OnAdding(this, eventArgs);
                 if (eventArgs.Cancel) {
                     return;
@@ -57,6 +58,7 @@ namespace SimpleListArray {
             if (OnAdded != null) {
                 OnAdded(this, new SimpleListChangedEventArgs<T>(arr));
             }
+            Updated(new SimpleListChangedEventArgs<T>(arr));
         }
 
         public void Insert(int index, T[] item) {
@@ -71,6 +73,7 @@ namespace SimpleListArray {
             if (OnAdded != null) {
                 OnAdded(this, new SimpleListChangedEventArgs<T>(item));
             }
+            Updated(new SimpleListChangedEventArgs<T>(item));
         }
 
         public void RemoveAt(int index) {
@@ -82,15 +85,21 @@ namespace SimpleListArray {
             if (onRemovingAt != null) {
                 onRemovingAt(index);
             }
+            Updated(new SimpleListChangedEventArgs<T>());
         }
         public void Clear() {
             if (OnRemoving != null) {
-                OnRemoving(this, null);
+                var eventArgs = new SimpleListChangingEventArgs<T>();
+                OnRemoving(this, eventArgs);
+                if (eventArgs.Cancel) {
+                    return;
+                }
             }
-            //((IList<T[]>)internalList).Clear();
-            //if (OnRemoved != null) {
-            //    OnRemoved(this, new SimpleListChangedEventArgs<T>(default));
-            //}
+            ((IList<T[]>)internalList).Clear();
+            if (OnRemoved != null) {
+                OnRemoved(this, new SimpleListChangedEventArgs<T>());
+            }
+            Updated(new SimpleListChangedEventArgs<T>());
         }
         public bool Remove(T[] item) {
             if (OnRemoving!=null) {
@@ -104,6 +113,7 @@ namespace SimpleListArray {
             if (OnRemoved!=null) {
                 OnRemoved(this, new SimpleListChangedEventArgs<T>(item));
             }
+            Updated(new SimpleListChangedEventArgs<T>(item));
             return temp;
         }
 
@@ -134,6 +144,13 @@ namespace SimpleListArray {
 
         public override int GetHashCode() {
             return internalList.GetHashCode();
+        }
+
+        void Updated(SimpleListChangedEventArgs<T> arg) {
+            if (OnUpdated != null) {
+                OnUpdated(this, arg);
+            }
+
         }
     }
 }

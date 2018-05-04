@@ -43,10 +43,12 @@ namespace SimpleListArray
             customLists.OnRemoved += Print;
             // Ссылки удаляет, а массивы нет надо реализовать IEqutable<T[]>
             var A = new int[] { 70, 80 };
-            // customLists.Add(A);
-            // Console.WriteLine( customLists.Remove(A));
+            customLists.Add(A);
+            Console.WriteLine( customLists.Remove(A));
             Console.WriteLine(customLists.Remove(new int[] { 70, 80 }));
-          //  customLists.Clear();
+            customLists.Clear();
+            customLists.OnUpdated += Print;
+            customLists.Add(A);
         }
         static void Print(object sender, SimpleListChangingEventArgs<int> args) {
             Console.WriteLine("До изменения CustomList: ");
@@ -61,15 +63,17 @@ namespace SimpleListArray
                     Console.WriteLine();
                 }
             }
-            Console.WriteLine("Изменяемые элементы CustomList: ");
-            for (int i = 0; i < args.Value.Length; i++) {
-                Console.Write("\t" + args.Value[i]);
-                if (args.Value[i] > 80) {
-                    args.Cancel = true;
-                }
+            if (args.Value != null) {
+                Console.WriteLine("Передаваемые аргументы CustomList: ");        
+                for (int i = 0; i < args.Value.Length; i++) {
+                    Console.Write("\t" + args.Value[i]);
+                    if (args.Value[i] > 80) {
+                        args.Cancel = true;
+                    }
+                }           
+                Console.WriteLine();
+                Console.WriteLine();
             }
-            Console.WriteLine();
-            Console.WriteLine();
 
         }
         static void Print(object sender, SimpleListChangedEventArgs<int> args) {
@@ -85,12 +89,14 @@ namespace SimpleListArray
                     Console.WriteLine();
                 }
             }
-            Console.WriteLine("Изменяемые элементы CustomList: ");
-            for (int i = 0; i < args.Value.Length; i++) {
-                Console.Write("\t" + args.Value[i]);
+            if (args.Value != null) {
+                Console.WriteLine("Передаваемые аргументы CustomList: ");
+                for (int i = 0; i < args.Value.Length; i++) {
+                    Console.Write("\t" + args.Value[i]);
+                }            
+                Console.WriteLine();
+                Console.WriteLine();
             }
-            Console.WriteLine();
-            Console.WriteLine();
         }
     }
 }
