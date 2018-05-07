@@ -45,7 +45,7 @@ namespace SimpleListArray
             var A = new int[] { 70, 80 };
             customLists.Add(A);
             Console.WriteLine( customLists.Remove(A));
-            Console.WriteLine(customLists.Remove(new int[] { 70, 80 }));
+            Console.WriteLine("Получилось ли удалить: " + customLists.Remove(new int[] { 70, 80 }));
             customLists.Clear();
             customLists.OnUpdated += Print;
             customLists.Add(A);

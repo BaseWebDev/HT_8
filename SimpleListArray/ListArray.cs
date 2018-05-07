@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace SimpleListArray {
     delegate void OnRemoving<T>(T i);
 
-    class CustomList<T> : IEnumerable<T[]>, IList<T[]>,IEquatable<T[]> where T : struct {
+    class CustomList<T> : IEnumerable<T[]>, IList<T[]>, IEquatable<T[]>, IEqualityComparer<T[]> where T : struct {
         /// <summary>
         /// Событие до добавления
         /// </summary>
@@ -35,9 +35,12 @@ namespace SimpleListArray {
 
         public int Count { get =>internalList.Count; }
 
-        public bool IsReadOnly => ((IList<T[]>)internalList).IsReadOnly;
+        public bool IsReadOnly => false;
 
-        public T[] this[int index] { get => ((IList<T[]>)internalList)[index]; set => ((IList<T[]>)internalList)[index] = value; }
+        public T[] this[int index] {
+            get => internalList[index];
+            set { internalList[index] = value; Updated(new SimpleListChangedEventArgs<T>(value)); }
+        }
 
         public void Add() {
             T[] arr = new T[] { default(T) };
@@ -68,7 +71,7 @@ namespace SimpleListArray {
                     return;
                 }
             }
-            ((IList<T[]>)internalList).Insert(index, item);
+            internalList.Insert(index, item);
             if (OnAdded != null) {
                 OnAdded(this, new SimpleListChangedEventArgs<T>(item));
             }
@@ -94,7 +97,7 @@ namespace SimpleListArray {
                     return;
                 }
             }
-            ((IList<T[]>)internalList).Clear();
+            internalList.Clear();
             if (OnRemoved != null) {
                 OnRemoved(this, new SimpleListChangedEventArgs<T>());
             }
@@ -108,7 +111,7 @@ namespace SimpleListArray {
                     return false;
                 }
             }           
-            var temp = ((IList<T[]>)internalList).Remove(item);
+            var temp = internalList.Remove(item);
             if (OnRemoved!=null) {
                 OnRemoved(this, new SimpleListChangedEventArgs<T>(item));
             }
@@ -125,24 +128,15 @@ namespace SimpleListArray {
         }
 
         public int IndexOf(T[] item) {
-            return ((IList<T[]>)internalList).IndexOf(item);
+            return internalList.IndexOf(item);
         }
 
         public bool Contains(T[] item) {
-            return ((IList<T[]>)internalList).Contains(item);
+            return internalList.Contains(item);
         }
 
         public void CopyTo(T[][] array, int arrayIndex) {
-            ((IList<T[]>)internalList).CopyTo(array, arrayIndex);
-        }
-
-        bool IEquatable<T[]>.Equals(T[] other) => Equals(this,other);
-        public static bool Equals(T[] arg1 , T[] arg2) {
-            return Equals(arg1, arg2);
-        }
-
-        public override int GetHashCode() {
-            return internalList.GetHashCode();
+            internalList.CopyTo(array, arrayIndex);
         }
 
         void Updated(SimpleListChangedEventArgs<T> arg) {
@@ -150,6 +144,32 @@ namespace SimpleListArray {
                 OnUpdated(this, arg);
             }
 
+        }
+
+        public bool Equals(T[] x, T[] y) {
+             if (x == null || y == null) return false;
+            if (Object.ReferenceEquals(x, y)) return true;
+           if (x.Length != y.Length) return false;
+            for (int i = 0; i < x.Length; i++) {
+                if ((dynamic)x[i] != (dynamic)y[i]) return false;
+               // SequenceEqual(x[i], y[i]);
+              // if (!ValueType.Equals(x[i],y[i])) return false;
+           }
+            //Check whether the products' properties are equal. 
+            return true;
+        }
+
+        public int GetHashCode(T[] obj) {
+            if (obj == null) return 0;
+            int sumHashCode = 0;
+            for (int i = 0; i < obj.Length; i++) {
+               unchecked { sumHashCode += obj[i].GetHashCode(); }
+            }
+            return sumHashCode;
+        }
+
+        public bool Equals(T[] other){
+            return   CustomList<T>.Equals(this,other);
         }
     }
 }
