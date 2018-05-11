@@ -14,26 +14,29 @@ namespace SimpleListArray
             customLists.OnRemoving += Print;
             // Регистрируем события на обновление
             customLists.OnUpdated += Print;
-            // Добавим метод для обработки удаления по индексу, используем лямбда-выражение
-            customLists.onRemovingAt = x => Console.WriteLine("Удаляем значение с индексом: " + x);
             // Создаем локальный стандратный делегат и добавляем в него метод
             Action<int> operation = customLists.RemoveAt;
-            
+            Console.WriteLine("***Add*** ");
             customLists.Add();
             customLists.Add(10);
-            customLists.Add(new int[] {20,30});
-            customLists.Add(new int[] { 40, 50 });
-            // Вызываем событие
-            operation(2);
+            customLists.Add(new int[] {20,30, 40, 50});
+            
+           
+            
             try {
-                customLists.RemoveAt(1);
+                Console.WriteLine("***RemoveAt***");
+                // Вызываем событие
+                operation(2);
+                Console.WriteLine("***Set by index***");
                 customLists[0] = 15;
             }
             catch (Exception ex) {
                 Console.WriteLine(ex.Message);
                 return;
             }
+            Console.WriteLine("***Insert***");
             customLists.Insert(2, 50);
+            Console.WriteLine("***Clear***");
             customLists.Clear();
             
         }

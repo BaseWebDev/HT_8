@@ -15,10 +15,6 @@ namespace SimpleListArray {
         /// </summary>
         public event EventHandler<SimpleListChangedEventArgs<T>> OnAdded;
         /// <summary>
-        /// Делегат для удаления с помощью RemoveAt
-        /// </summary>
-        public OnRemoving<int> onRemovingAt;
-        /// <summary>
         /// Событие до удаления
         /// </summary>
         public event EventHandler<SimpleListChangingEventArgs<T>> OnRemoving;
@@ -92,14 +88,21 @@ namespace SimpleListArray {
             return temp;
         }
 
-        public void RemoveAt(int index) {
+        public void RemoveAt(int index) {         
             if (internalList != null && internalList.Count > 1 && index >= 0 && index < internalList.Count) {
-                internalList.RemoveAt(index);
+                if (OnRemoving != null) {
+                    var eventArgs = new SimpleListChangingEventArgs<T>(internalList[index]);
+                    OnRemoving(this, eventArgs);
+                    if (eventArgs.Cancel) {
+                        return;
+                    }
+                }
+                internalList.RemoveAt(index);           
+                if (OnRemoved != null) {
+                    OnRemoved(this, new SimpleListChangedEventArgs<T>(internalList[index]));
+                }
             } else {
                 throw new ArgumentOutOfRangeException(@"Значение индекса указано неверно!");
-            }
-            if (onRemovingAt != null) {
-                onRemovingAt(index);
             }
         }
 
